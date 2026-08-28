@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETF 數據中心與多檔比對</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card-bg: #1e293b; --border: #334155;
+      --text: #f8fafc; --sub-text: #94a3b8; --primary: #38bdf8;
+      --up: #ef4444; --dn: #22c55e;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { margin-bottom: 20px; font-size: 24px; color: var(--primary); }
+    
+    /* 頁籤控制 */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; }
+    .tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 控制區與搜尋 */
+    .controls { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+    input[type="text"], select { background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; outline: none; }
+    
+    /* 表格樣式 */
+    .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { background: #0f172a; color: var(--sub-text); font-weight: 600; cursor: pointer; }
+    th:first-child, th:nth-child(2), td:first-child, td:nth-child(2) { text-align: left; }
+    tr:hover { background: rgba(255, 255, 255, 0.03); }
+    
+    /* 比對卡片區 */
+    .compare-selector { background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
+    .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+    .compare-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; }
+    .compare-card h3 { margin: 0 0 10px 0; color: var(--primary); display: flex; justify-content: space-between; }
+    .row-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+    
+    /* 漲跌顏色 */
+    .up { color: var(--up); }
+    .dn { color: var(--dn); }
+    .tag { padding: 2px 6px; border-radius: 4px; font-size: 12px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📊 ETF 數據中心</h1>
+
+  <!-- 切換頁籤 -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('all-view', this)">完整資料總覽</button>
+    <button class="tab-btn" onclick="switchTab('compare-view', this)">多檔 ETF 交叉比對</button>
+  </div>
+
+  <!-- 分頁一：總覽表格 -->
+  <div id="all-view" class="tab-content active">
+    <div class="controls">
+      <input type="text" id="search" placeholder="搜尋代碼或名稱..." oninput="filterTable()">
+      <select id="cat-filter" onchange="filterTable()">
+        <option value="">所有類別</option>
+      </select>
+    </div>
+    <div class="table-container">
+      <table id="etf-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable('symbol')">代碼</th>
+            <th onclick="sortTable('name')">名稱</th>
+            <th onclick="sortTable('price')">現價</th>
+            <th onclick="sortTable('bias')">年線乖離率</th>
+            <th onclick="sortTable('market_cap')">規模(億)</th>
+            <th onclick="sortTable('yield')">殖利率</th>
+            <th onclick="sortTable('annual_return')">年報酬率</th>
+            <th onclick="sortTable('dividend_4q')">近四季配息</th>
+            <th>除息週期</th>
+            <th>最新除息日</th>
+            <th>類別</th>
+          </tr>
+        </thead>
+        <tbody id="etf-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 分頁二：多檔比對 -->
+  <div id="compare-view" class="tab-content">
+    <div class="compare-selector">
+      <label>選擇要比對的 ETF（可多選）：</label>
+      <select id="compare-select" onchange="addCompareItem(this.value)">
+        <option value="">-- 請選擇 ETF --</option>
+      </select>
+    </div>
+    <div id="compare-grid" class="compare-grid"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://sktrmemtvarutrbcpwij.supabase.co';
+  const PUBLISHABLE_KEY = 'sb_publishable_iPdnGKeCEfPuH2xZBYK4Sg_G8ivGx1p';
+  const _supabase = supabase.createClient(SUPABASE_URL, PUBLISHABLE_KEY);
+
+  let rawData = [];
+  let compareList = [];
+
+  // 格式化輔助
+  const fmt = (v, isPct = false, showSign = false) => {
+    if (v == null) return '—';
+    const num = Number(v).toFixed(2);
+    const sign = showSign && num > 0 ? '+' : '';
+    return isPct ? `${sign}${num}%` : Number(v).toLocaleString();
+  };
+
+  // 初始化載入
+  async function loadData() {
+    const { data, error } = await _supabase.from('etf_data').select('*').order('symbol');
+    if (error) return alert('載入失敗: ' + error.message);
+    rawData = data;
+
+    renderTable(rawData);
+    initOptions(rawData);
+  }
+
+  // 渲染總覽表格
+  function renderTable(data) {
+    const tbody = document.getElementById('etf-tbody');
+    tbody.innerHTML = data.map(item => `
+      <tr>
+        <td><b>${item.symbol}</b></td>
+        <td>${item.name}</td>
+        <td>${fmt(item.price)}</td>
+        <td class="${item.bias >= 0 ? 'up' : 'dn'}">${fmt(item.bias, true, true)}</td>
+        <td>${fmt(item.market_cap)}</td>
+        <td class="up">${fmt(item.yield, true)}</td>
+        <td class="${item.annual_return >= 0 ? 'up' : 'dn'}">${fmt(item.annual_return, true)}</td>
+        <td>${fmt(item.dividend_4q)}</td>
+        <td><span class="tag">${item.payout_cycle || '—'}</span></td>
+        <td>${item.ex_date || '—'}</td>
+        <td><span class="tag">${item.category || '—'}</span></td>
+      </tr>
+    `).join('');
+  }
+
+  // 初始化選單類別與比對下拉選單
+  function initOptions(data) {
+    const categories = [...new Set(data.map(d => d.category).filter(Boolean))];
+    const catSelect = document.getElementById('cat-filter');
+    categories.forEach(c => catSelect.add(new Option(c, c)));
+
+    const compSelect = document.getElementById('compare-select');
+    data.forEach(d => compSelect.add(new Option(`${d.symbol} ${d.name}`, d.symbol)));
+  }
+
+  // 搜尋與篩選
+  function filterTable() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const cat = document.getElementById('cat-filter').value;
+
+    const filtered = rawData.filter(d => {
+      const matchQ = d.symbol.toLowerCase().includes(q) || d.name.toLowerCase().includes(q);
+      const matchCat = !cat || d.category === cat;
+      return matchQ && matchCat;
+    });
+    renderTable(filtered);
+  }
+
+  // 多檔比對邏輯
+  function addCompareItem(symbol) {
+    if (!symbol || compareList.includes(symbol)) return;
+    if (compareList.length >= 4) return alert('最多同時比對 4 檔 ETF');
+    
+    compareList.push(symbol);
+    renderCompareCards();
+  }
+
+  function removeCompareItem(symbol) {
+    compareList = compareList.filter(s => s !== symbol);
+    renderCompareCards();
+  }
+
+  function renderCompareCards() {
+    const grid = document.getElementById('compare-grid');
+    grid.innerHTML = compareList.map(sym => {
+      const d = rawData.find(item => item.symbol === sym);
+      if (!d) return '';
+      return `
+        <div class="compare-card">
+          <h3>
+            <span>${d.symbol} ${d.name}</span>
+            <button onclick="removeCompareItem('${d.symbol}')" style="background:none;border:none;color:#ef4444;cursor:pointer;">✕</button>
+          </h3>
+          <div class="row-item"><span>類別</span><span>${d.category || '—'}</span></div>
+          <div class="row-item"><span>現價</span><span>${fmt(d.price)}</span></div>
+          <div class="row-item"><span>年線乖離率</span><span class="${d.bias >= 0 ? 'up' : 'dn'}">${fmt(d.bias, true, true)}</span></div>
+          <div class="row-item"><span>殖利率</span><span class="up">${fmt(d.yield, true)}</span></div>
+          <div class="row-item"><span>年報酬率</span><span class="${d.annual_return >= 0 ? 'up' : 'dn'}">${fmt(d.annual_return, true, true)}</span></div>
+          <div class="row-item"><span>規模</span><span>${fmt(d.market_cap)} 億</span></div>
+          <div class="row-item"><span>近四季配息</span><span>${fmt(d.dividend_4q)}</span></div>
+          <div class="row-item"><span>除息週期</span><span>${d.payout_cycle || '—'}</span></div>
+          <div class="row-item"><span>最新除息日</span><span>${d.ex_date || '—'}</span></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 頁籤切換
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  loadData();
+</script>
+</body>
+</html>
