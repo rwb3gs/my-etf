@@ -30,7 +30,22 @@
     table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
     th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #0f172a; color: var(--sub-text); font-weight: 600; cursor: pointer; }
-    th:first-child, th:nth-child(2), td:first-child, td:nth-child(2) { text-align: left; }
+    
+    /* 鎖定第一欄 (代碼) */
+    th:first-child, td:first-child { 
+      position: sticky; 
+      left: 0; 
+      z-index: 2; 
+      text-align: left; 
+      background: #1e293b; 
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3); 
+    }
+    
+    /* 左上角表頭「代碼」置頂 */
+    th:first-child { background: #0f172a; z-index: 3; }
+    
+    /* 第二欄 (名稱) 置左 */
+    th:nth-child(2), td:nth-child(2) { text-align: left; }
     tr:hover { background: rgba(255, 255, 255, 0.03); }
     
     /* 比對卡片區 */
