@@ -126,8 +126,23 @@
   let compareList = [];
   const EXCLUDED_CATEGORIES = ['金融股', '其他個股'];
 
-  // 數字與百分比格式化
-  const fmt = (v) => (v == null || v === '') ? '—' : Number(v).toFixed(2);
+  // 動態判斷位數：若有小數點第 3 位則顯示 3 位，否則預設 2 位
+  const fmt = (v) => {
+    if (v == null || v === '') return '—';
+    let num = Number(v);
+    if (isNaN(num)) return v;
+
+    // 判斷乘以 100 後是否仍有小數（代表第 3 位以上有值）
+    const hasDecimal3 = Math.abs(num * 100 - Math.round(num * 100)) > 0.0001;
+    return num.toFixed(hasDecimal3 ? 3 : 2);
+  };
+  
+    // 股利配息專用：一律顯示 3 位小數
+    const fmtDividend = (v) => {
+      if (v == null || v === '') return '—';
+      let num = Number(v);
+      return isNaN(num) ? v : num.toFixed(3);
+    };
   
   // 1. 修正百分比格式化：資料庫已是 30.17、98.17 格式，直接加上 % 即可，不需再 * 100
   const fmtPercent = (v, showSign = false) => {
@@ -179,11 +194,11 @@
           <td>${fmt(item.ma240)}</td>
           <td class="${biasClass}">${biasStr}</td>
           <td>${fmt(item.market_cap)}</td>
-          <td class="text-blue">${fmt(item.dividend_4q)}</td>
+          <td class="text-blue">${fmtDividend(item.dividend_4q)}</td>
           <td class="text-blue">${fmtPercent(item.yield)}</td>
           <td class="${annualClass}">${annualStr}</td>
-          <td class="text-blue">${fmt(item.dividend_ytd)}</td>
-          <td class="text-blue">${fmt(item.dividend_latest)}</td>
+          <td class="text-blue">${fmtDividend(item.dividend_ytd)}</td>
+          <td class="text-blue">${fmtDividend(item.dividend_latest)}</td>
           <td>${fmtDate(item.ex_date)}</td>
           <td>${fmtDate(item.pay_date)}</td>
           <td><span class="tag">${item.payout_cycle || '—'}</span></td>
