@@ -31,20 +31,22 @@
     th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #0f172a; color: var(--sub-text); font-weight: 600; cursor: pointer; }
     
-    /* 鎖定前兩欄：最愛 (left: 0) 與 代碼 (left: 50px) */
+    /* 鎖定前兩欄：最愛 (left: 0) 與 代碼 (left: 42px) */
     th:first-child, td:first-child { 
       position: sticky; 
       left: 0; 
       z-index: 2; 
-      text-align: left; 
+      text-align: center; 
       background: #1e293b; 
-      width: 43px;           /* 👈 1. 修改「最愛」欄位寬度 (例如改為 60px) */
-      min-width: 43px;       /* 👈 2. 修改「最愛」最小寬度 (例如改為 60px) */
+      width: 43px;
+      min-width: 43px;
+      max-width: 43px; /* 👈 新增這行！強制第一欄死鎖在 43px，不被內容擠大 */
+      box-sizing: border-box;
     }
 
     th:nth-child(2), td:nth-child(2) {
       position: sticky;
-      left: 43px;            /* 👈 3. 修改第二欄「股票代碼」靠左距離 (要跟上面的寬度一致，改為 60px) */
+      left: 42px;       /* 👈 改為 42px (向左覆蓋 1px 消除縫隙與平移跳動) */
       z-index: 2;
       text-align: left;
       background: #1e293b;
@@ -55,7 +57,7 @@
     th:nth-child(3), td:nth-child(3) { text-align: left; }
     tr:hover { background: rgba(255, 255, 255, 0.03); }
 
-    /* 星星按鈕樣式 */
+    /* 修正後：強制尺寸與完美置中 */
     .star-btn {
       background: none;
       border: none;
@@ -63,6 +65,13 @@
       cursor: pointer;
       color: #64748b;
       transition: transform 0.1s ease;
+      
+      /* 新增以下四行 */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      line-height: 1;
     }
     .star-btn.active { color: #f59e0b; }
     .star-btn:active { transform: scale(1.25); }
