@@ -31,19 +31,41 @@
     th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #0f172a; color: var(--sub-text); font-weight: 600; cursor: pointer; }
     
-    /* 鎖定第一欄 (代碼) */
+    /* 鎖定前兩欄：最愛 (left: 0) 與 代碼 (left: 50px) */
     th:first-child, td:first-child { 
       position: sticky; 
       left: 0; 
       z-index: 2; 
-      text-align: left; 
+      text-align: center; 
       background: #1e293b; 
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3); 
+      width: 45px;
+      min-width: 45px;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      position: sticky;
+      left: 45px;
+      z-index: 2;
+      text-align: left;
+      background: #1e293b;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
     }
     
-    th:first-child { background: #0f172a; z-index: 3; }
-    th:nth-child(2), td:nth-child(2) { text-align: left; }
+    th:first-child, th:nth-child(2) { background: #0f172a; z-index: 3; }
+    th:nth-child(3), td:nth-child(3) { text-align: left; }
     tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+    /* 星星按鈕樣式 */
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #64748b;
+      transition: transform 0.1s ease;
+    }
+    .star-btn.active { color: #f59e0b; }
+    .star-btn:active { transform: scale(1.25); }
     
     /* 比對卡片區 */
     .compare-selector { background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
@@ -76,12 +98,14 @@
       <input type="text" id="search" placeholder="搜尋代碼或名稱..." oninput="filterTable()">
       <select id="cat-filter" onchange="filterTable()">
         <option value="">所有類別</option>
+        <option value="FAVORITE">⭐ 我的最愛</option>
       </select>
     </div>
     <div class="table-container">
       <table id="etf-table">
         <thead>
           <tr>
+            <th>最愛</th>
             <th onclick="sortTable('symbol')">股票代碼</th>
             <th onclick="sortTable('name')">股票名稱</th>
             <th onclick="sortTable('price')">現價</th>
@@ -126,25 +150,38 @@
   let compareList = [];
   const EXCLUDED_CATEGORIES = ['金融股', '其他個股'];
 
+  // 讀取/儲存最愛清單 (localStorage)
+  let favorites = JSON.parse(localStorage.getItem('etf_favorites')) || [];
+
+  function toggleFavorite(symbol) {
+    const index = favorites.indexOf(symbol);
+    if (index > -1) {
+      favorites.splice(index, 1);
+    } else {
+      favorites.push(symbol);
+    }
+    localStorage.setItem('etf_favorites', JSON.stringify(favorites));
+    filterTable(); // 重新整理視圖
+  }
+
   // 動態判斷位數：若有小數點第 3 位則顯示 3 位，否則預設 2 位
   const fmt = (v) => {
     if (v == null || v === '') return '—';
     let num = Number(v);
     if (isNaN(num)) return v;
 
-    // 判斷乘以 100 後是否仍有小數（代表第 3 位以上有值）
     const hasDecimal3 = Math.abs(num * 100 - Math.round(num * 100)) > 0.0001;
     return num.toFixed(hasDecimal3 ? 3 : 2);
   };
   
-    // 股利配息專用：一律顯示 3 位小數
-    const fmtDividend = (v) => {
-      if (v == null || v === '') return '—';
-      let num = Number(v);
-      return isNaN(num) ? v : num.toFixed(3);
-    };
+  // 股利配息專用：一律顯示 3 位小數
+  const fmtDividend = (v) => {
+    if (v == null || v === '') return '—';
+    let num = Number(v);
+    return isNaN(num) ? v : num.toFixed(3);
+  };
   
-  // 1. 修正百分比格式化：資料庫已是 30.17、98.17 格式，直接加上 % 即可，不需再 * 100
+  // 百分比格式化
   const fmtPercent = (v, showSign = false) => {
     if (v == null || v === '') return '—';
     let num = Number(v);
@@ -171,11 +208,11 @@
     initOptions(rawData);
   }
 
-  // 2. 修正表格渲染 (對應正確的 Supabase 欄位名稱)
+  // 表格渲染
   function renderTable(data) {
     const tbody = document.getElementById('etf-tbody');
     if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:20px;color:var(--sub-text);">查無符合的 ETF 資料</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--sub-text);">查無符合的 ETF 資料</td></tr>`;
       return;
     }
 
@@ -186,8 +223,17 @@
       const annualStr = fmtPercent(item.annual_return, true);
       const annualClass = annualStr.includes('+') ? 'up' : (annualStr.includes('-') ? 'dn' : '');
 
+      const isFav = favorites.includes(item.symbol);
+      const starIcon = isFav ? '⭐' : '☆';
+      const starClass = isFav ? 'star-btn active' : 'star-btn';
+
       return `
         <tr>
+          <td>
+            <button onclick="toggleFavorite('${item.symbol}')" class="${starClass}" title="${isFav ? '取消最愛' : '加入最愛'}">
+              ${starIcon}
+            </button>
+          </td>
           <td><b>${item.symbol || '—'}</b></td>
           <td>${item.name || '—'}</td>
           <td><b>${fmt(item.price)}</b></td>
@@ -208,11 +254,11 @@
     }).join('');
   }
 
-  // 初始化選單類別 (自動排除金融股與其他個股)
+  // 初始化選單類別
   function initOptions(data) {
     const categories = [...new Set(data.map(d => d.category).filter(Boolean))];
     const catSelect = document.getElementById('cat-filter');
-    catSelect.innerHTML = '<option value="">所有類別</option>';
+    catSelect.innerHTML = '<option value="">所有類別</option><option value="FAVORITE">⭐ 我的最愛</option>';
     categories.forEach(c => catSelect.add(new Option(c, c)));
 
     const compSelect = document.getElementById('compare-select');
@@ -227,7 +273,16 @@
 
     const filtered = rawData.filter(d => {
       const matchQ = (d.symbol && d.symbol.toLowerCase().includes(q)) || (d.name && d.name.toLowerCase().includes(q));
-      const matchCat = !cat || d.category === cat;
+      
+      let matchCat = false;
+      if (!cat) {
+        matchCat = true;
+      } else if (cat === 'FAVORITE') {
+        matchCat = favorites.includes(d.symbol);
+      } else {
+        matchCat = d.category === cat;
+      }
+
       return matchQ && matchCat;
     });
     renderTable(filtered);
@@ -247,7 +302,7 @@
     renderCompareCards();
   }
 
-  // 3. 修正卡片比對渲染 (同步修正 Supabase 欄位名稱)
+  // 卡片比對渲染
   function renderCompareCards() {
     const grid = document.getElementById('compare-grid');
     grid.innerHTML = compareList.map(sym => {
