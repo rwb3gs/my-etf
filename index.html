@@ -36,15 +36,15 @@
       position: sticky; 
       left: 0; 
       z-index: 2; 
-      text-align: center; 
+      text-align: left; 
       background: #1e293b; 
-      width: 45px;
-      min-width: 45px;
+      width: 43px;           /* 👈 1. 修改「最愛」欄位寬度 (例如改為 60px) */
+      min-width: 43px;       /* 👈 2. 修改「最愛」最小寬度 (例如改為 60px) */
     }
 
     th:nth-child(2), td:nth-child(2) {
       position: sticky;
-      left: 45px;
+      left: 43px;            /* 👈 3. 修改第二欄「股票代碼」靠左距離 (要跟上面的寬度一致，改為 60px) */
       z-index: 2;
       text-align: left;
       background: #1e293b;
