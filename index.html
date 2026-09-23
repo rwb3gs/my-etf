@@ -128,7 +128,8 @@
             <th onclick="sortTable('latest_dividend')">最新配息</th>
             <th>最新除息日期</th>
             <th>最新股利發放日</th>
-            <th>除息週期</th>
+            <th onclick="sortTable('dividend_cycle')">除息週期</th>
+            <th onclick="sortTable('payout_cycle')">入帳週期</th>
             <th>類別</th>
           </tr>
         </thead>
@@ -256,6 +257,7 @@
           <td class="text-blue">${fmtDividend(item.dividend_latest)}</td>
           <td>${fmtDate(item.ex_date)}</td>
           <td>${fmtDate(item.pay_date)}</td>
+          <td><span class="tag">${item.dividend_cycle || '-'}</span></td>
           <td><span class="tag">${item.payout_cycle || '—'}</span></td>
           <td><span class="tag">${item.category || '—'}</span></td>
         </tr>
@@ -342,7 +344,8 @@
           <div class="row-item"><span>最新配息</span><span class="text-blue">${fmt(d.dividend_latest)}</span></div>
           <div class="row-item"><span>最新除息日期</span><span>${fmtDate(d.ex_date)}</span></div>
           <div class="row-item"><span>最新股利發放日</span><span>${fmtDate(d.pay_date)}</span></div>
-          <div class="row-item"><span>除息週期</span><span>${d.payout_cycle || '—'}</span></div>
+          <div class="row-item"><span>除息週期</span><span>${d.dividend_cycle || '-'}</span></div>
+          <div class="row-item"><span>入帳週期</span><span>${d.payout_cycle || '-'}</span></div>
         </div>
       `;
     }).join('');
