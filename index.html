@@ -25,71 +25,101 @@
     }
     .container { max-width: 1720px; margin: 0 auto; }
     
-    /* 頂部標題 Bar */
-    .header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
+    /* 頂部 Header 與比對控制列 */
+    .header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; }
     h1 { margin: 0; font-size: 20px; color: var(--primary); display: flex; align-items: center; gap: 6px; font-weight: 800; }
     
     /* 控制區：搜尋、分類、入帳週期與排序 */
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--card-bg); padding: 10px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; }
     input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 7px 10px; border-radius: 8px; font-size: 13px; outline: none; font-weight: 500; }
     input:focus, select:focus { border-color: var(--primary); }
     
-    .btn { background: var(--primary); color: #0f172a; border: none; padding: 7px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; white-space: nowrap; }
+    .btn { background: var(--primary); color: #0f172a; border: none; padding: 7px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px; }
     .btn:hover { opacity: 0.9; }
-    .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 7px 12px; }
+    .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
 
-    /* 💡 三顆頁籤分頁按鈕 (手機版均勻平分 RWD) */
+    /* 頁籤控制 */
     .view-tabs { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-    .tab-btn { flex: 1; text-align: center; background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 8px 6px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; text-align: center; }
     .tab-btn.active { background: var(--primary); color: #0f172a; border-color: var(--primary); }
 
+    @media (max-width: 640px) {
+      .view-tabs { width: 100%; }
+      .tab-btn { flex: 1; padding: 8px 4px; font-size: 12px; }
+      .controls { gap: 6px; }
+      input, select { font-size: 12px; padding: 6px 8px; }
+    }
+
     /* 卡片檢視網格 */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; position: relative; }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
     .card-title { font-size: 18px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
     .card-sub { font-size: 12px; color: var(--sub-text); margin-top: 2px; }
     
     .data-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 13px; margin-bottom: 10px; }
-    .row-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
+    .row-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
     .row-item span:first-child { color: var(--sub-text); font-size: 12px; }
     
+    /* 雙欄年化報酬率佈局 */
     .return-dual-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; margin-top: 6px; }
     .return-col-item { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; font-size: 13px; }
     .return-col-item span:first-child { color: var(--sub-text); font-size: 12px; }
 
-    /* 表格檢視區域 (電腦版預設尺寸) */
-    .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
+    /* 主表格檢視區域 */
+    .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #0f172a; color: var(--sub-text); font-weight: 700; cursor: pointer; font-size: 13px; }
     
-    /* 電腦版：前兩欄鎖定尺寸 */
-    th:first-child, td:first-child { 
-      position: sticky; left: 0; z-index: 20; text-align: center; background: #1e293b !important; 
-      width: 42px; min-width: 42px; max-width: 42px; padding: 8px 2px;
+    /* 📌【主表格 #mainTable】Sticky 第一二欄 */
+    #mainTable th:first-child, #mainTable td:first-child { 
+      position: sticky; 
+      left: 0; 
+      z-index: 20; 
+      text-align: center; 
+      background: #1e293b !important; 
+      width: 36px;
+      min-width: 36px;
+      max-width: 36px;
+      padding: 8px 2px;
     }
 
-    th:nth-child(2), td:nth-child(2) {
-      position: sticky; left: 42px; z-index: 20; text-align: left; background: #1e293b !important;
-      box-shadow: 3px 0 6px rgba(0, 0, 0, 0.4); min-width: 150px; width: 150px; padding: 8px 8px;
+    #mainTable th:nth-child(2), #mainTable td:nth-child(2) {
+      position: sticky;
+      left: 36px;
+      z-index: 20;
+      text-align: left;
+      background: #1e293b !important;
+      box-shadow: 3px 0 6px rgba(0, 0, 0, 0.4);
+      width: 130px;
+      min-width: 130px;
+      max-width: 130px;
+      padding: 8px 6px;
     }
     
-    th:first-child, th:nth-child(2) { background: #0f172a !important; z-index: 22; }
-    tr:hover td { background: rgba(255, 255, 255, 0.04) !important; }
-    tr:hover td:first-child, tr:hover td:nth-child(2) { background: #273549 !important; }
+    #mainTable th:first-child, #mainTable th:nth-child(2) { background: #0f172a !important; z-index: 22; }
+    #mainTable tr:hover td { background: rgba(255, 255, 255, 0.04) !important; }
+    #mainTable tr:hover td:first-child, #mainTable tr:hover td:nth-child(2) { background: #273549 !important; }
 
-    .star-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    /* 最愛星星與比對方塊 */
+    .star-btn { 
+      background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b; 
+      display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%;
+    }
     .star-btn.active { color: #f59e0b; }
     .compare-checkbox { width: 15px; height: 15px; cursor: pointer; accent-color: var(--primary); }
 
+    /* 漲跌與數據顏色 */
     .num-up { color: #fb7185; font-weight: 700; font-size: 14px; }
     .num-dn { color: #34d399; font-weight: 700; font-size: 14px; }
     .num-neutral { color: var(--text); font-weight: 500; }
     .highlight-val { color: var(--primary); font-weight: 800; font-size: 15px; }
     .text-blue { color: #60a5fa; font-weight: 700; font-size: 15px; }
 
-    .cycle-badge { padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+    /* 配息組別標籤 */
+    .cycle-badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; display: inline-block; }
     .cycle-monthly { background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
     .cycle-q1 { background-color: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
     .cycle-q2 { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
@@ -97,56 +127,63 @@
     .cycle-default { background-color: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
 
     /* Modal 比對彈窗 */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 8px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 1400px; max-height: 95vh; overflow-y: auto; padding: 12px; position: relative; }
-    .modal-close { position: absolute; top: 10px; right: 12px; font-size: 24px; cursor: pointer; color: var(--sub-text); z-index: 50; }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 1400px; max-height: 94vh; overflow-y: auto; padding: 14px; position: relative; }
+    .modal-close { position: absolute; top: 10px; right: 14px; font-size: 24px; cursor: pointer; color: var(--sub-text); z-index: 50; }
     
     .compare-table { width: 100%; border-collapse: collapse; }
-    .compare-table th, .compare-table td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); }
+    .compare-table th, .compare-table td { padding: 10px 10px; text-align: center; border-bottom: 1px solid var(--border); font-size: 13px; }
     
-    /* 💡【比對彈窗死鎖 Sticky 第一欄修復】 */
+    /* 💡 Modal 第一欄（比對項目）鎖死 */
     .compare-table th:first-child, 
     .compare-table td:first-child { 
-      position: sticky !important; left: 0 !important; z-index: 30 !important; text-align: left !important; 
-      background: #0f172a !important; box-shadow: 3px 0 6px rgba(0, 0, 0, 0.5); 
-      min-width: 110px !important; max-width: 110px !important; width: 110px !important; padding: 10px 8px;
+      position: sticky !important; 
+      left: 0 !important; 
+      z-index: 30 !important; 
+      text-align: left !important; 
+      background: #0f172a !important; 
+      box-shadow: 3px 0 6px rgba(0, 0, 0, 0.5); 
+      min-width: 110px !important; 
+      max-width: 110px !important; 
+      width: 110px !important;
+      padding-left: 8px !important;
     }
-    .compare-table th:first-child { z-index: 35 !important; background: #090d16 !important; }
-
-    .best-badge { background: rgba(244, 63, 94, 0.2); color: var(--up); padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-
-    /* =========================================================================
-       📱【手機版專屬極致 RWD 優化】(螢幕寬度小於 768px 時生效)
-       ========================================================================= */
-    @media (max-width: 768px) {
-      body { padding: 8px; }
-      
-      /* 控制欄滿寬化 */
-      .controls { padding: 10px; }
-      #searchInput, #categorySelect, #payoutSelect, #sortSelect { width: 100%; font-size: 13px; }
-      #sortSelect { margin-left: 0 !important; }
-
-      /* 💡 縮減表格第一二欄寬度，為手機騰出更多右側可視區 */
-      th:first-child, td:first-child { 
-        width: 36px !important; min-width: 36px !important; max-width: 36px !important; 
-      }
-      th:nth-child(2), td:nth-child(2) { 
-        left: 36px !important; width: 125px !important; min-width: 125px !important; max-width: 125px !important; 
-        font-size: 13px;
-      }
-
-      th, td { padding: 9px 8px; font-size: 13px; }
-      .highlight-val, .text-blue { font-size: 14px; }
-
-      /* 比對彈窗手機版優化 */
-      .modal-content { padding: 10px; }
-      .compare-table th:first-child, .compare-table td:first-child { 
-        min-width: 95px !important; max-width: 95px !important; width: 95px !important; 
-        font-size: 12px; padding: 8px 6px;
-      }
-      .compare-table th, .compare-table td { padding: 8px 6px; font-size: 12px; }
+    
+    .compare-table th:first-child { 
+      z-index: 35 !important; 
+      background: #090d16 !important; 
     }
+
+    .compare-table th:nth-child(n+2), 
+    .compare-table td:nth-child(n+2) { 
+      position: static !important; 
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    /* 💡【關鍵修復】：分組標題列 (例如 📌 基本資訊與規模) 設定死鎖與內襯文字 Sticky */
+    .compare-group-row td {
+      background: #1e293b !important;
+      color: var(--primary) !important;
+      font-weight: bold !important;
+      text-align: left !important;
+      padding: 10px 8px !important;
+    }
+
+    /* 分組標題內的文字獨立鎖定在最左側 */
+    .compare-group-title {
+      position: sticky !important;
+      left: 12px !important;
+      display: inline-block;
+      white-space: nowrap;
+      z-index: 40 !important;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .best-badge { background: rgba(244, 63, 94, 0.2); color: var(--up); padding: 2px 4px; border-radius: 4px; font-size: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -158,15 +195,14 @@
       <h1>📊 Bin｜ETF 數據中心</h1>
       <div id="compareBar" style="display: none; align-items: center; gap: 8px;">
         <span id="compareCount" style="color: var(--primary); font-weight: bold; font-size: 13px;">已選 0 檔</span>
-        <!-- 💡 依據要求：按鈕簡化為「開啟比對」 -->
         <button class="btn" onclick="openCompareModal()">🚀 開啟比對</button>
-        <button class="btn btn-outline" onclick="clearCompare()">清空</button>
+        <button class="btn btn-outline" style="padding:7px 8px;" onclick="clearCompare()">清空</button>
       </div>
     </div>
 
-    <!-- 控制區 -->
+    <!-- 控制區：搜尋、分類、入帳週期，最右側放「排序選單」 -->
     <div class="controls">
-      <input type="text" id="searchInput" placeholder="搜尋代碼或名稱 (例: 00878)" oninput="filterData()">
+      <input type="text" id="searchInput" placeholder="搜尋代碼/名稱" oninput="filterData()" style="width: 130px;">
       
       <select id="categorySelect" onchange="filterData()">
         <option value="">全部分類</option>
@@ -176,8 +212,8 @@
       <select id="payoutSelect" onchange="filterData()">
         <option value="">全部入帳週期</option>
         <option value="月配">月配息</option>
-        <option value="季配">季配息 (3,6,9,12 等 4次)</option>
-        <option value="年配">年配 / 半年配 (1~2次)</option>
+        <option value="季配">季配息 (3,6,9,12 等)</option>
+        <option value="年配">年配 / 半年配</option>
       </select>
 
       <select id="sortSelect" onchange="filterData()" style="margin-left: auto;">
@@ -188,14 +224,14 @@
         <option value="return_3y_desc">3年化報酬率 (高 → 低)</option>
       </select>
 
-      <div style="font-size: 13px; color: var(--sub-text); font-weight: 600;" id="dataCount">
+      <div style="font-size: 12px; color: var(--sub-text); font-weight: 600;" id="dataCount">
         載入中...
       </div>
     </div>
 
-    <!-- 預設開啟「查看 ETF 配息」 -->
+    <!-- 頁籤選擇 -->
     <div class="view-tabs">
-      <button class="tab-btn" onclick="switchView('card', this)">🎴 卡片檢視</button>
+      <button class="tab-btn" onclick="switchView('card', this)">🎴 卡片</button>
       <button class="tab-btn active" onclick="switchView('dividend', this)">💰 查看 ETF 配息</button>
       <button class="tab-btn" onclick="switchView('performance', this)">📈 查看 ETF 績效</button>
     </div>
@@ -218,6 +254,7 @@
     <div class="modal-content">
       <span class="modal-close" onclick="closeCompareModal()">&times;</span>
       <h2 style="margin-top: 0; color: var(--primary); font-size: 18px;">⚖️ ETF 多檔橫向深度比對</h2>
+      <p style="color: var(--sub-text); font-size: 12px; margin-bottom: 12px;">跨緯度評估不同 ETF 之股息殖利率、年化報酬率與績效表現</p>
       
       <div class="table-wrapper">
         <table class="compare-table" id="compareMatrixTable"></table>
@@ -369,7 +406,6 @@
         return matchSearch && matchCat && matchPayout;
       });
 
-      // 排序
       filteredEtfData.sort((a, b) => {
         if (sort === 'yield_desc') return (b.yield || 0) - (a.yield || 0);
         if (sort === 'market_cap_desc') return (b.market_cap || 0) - (a.market_cap || 0);
@@ -378,7 +414,7 @@
         return a.symbol.localeCompare(b.symbol);
       });
 
-      document.getElementById('dataCount').textContent = `共 ${filteredEtfData.length} 檔標的`;
+      document.getElementById('dataCount').textContent = `共 ${filteredEtfData.length} 檔`;
 
       renderCurrentView();
     }
@@ -396,12 +432,12 @@
     }
 
     // ==========================================
-    // 4. 🎴 卡片檢視渲染
+    // 4. 卡片檢視渲染
     // ==========================================
     function renderCardView() {
       const container = document.getElementById('cardView');
       if (filteredEtfData.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--sub-text);">無符合條件的 ETF 標的</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--sub-text);">無符合條件的 ETF 標的</div>`;
         return;
       }
 
@@ -435,12 +471,12 @@
               <div class="row-item"><span>最新發放日</span><span>${d.pay_date || '-'}</span></div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding-top:2px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; padding-top:2px;">
               <span style="font-size:12px; color:var(--sub-text);">入帳週期：</span>
               ${getCycleBadgeHtml(d.payout_cycle)}
             </div>
 
-            <div style="font-size:12px; color:var(--sub-text); margin-top:8px; font-weight:600;">📈 多期間績效與年化報酬率：</div>
+            <div style="font-size:11px; color:var(--sub-text); margin-top:8px; font-weight:600;">📈 多期間績效與年化報酬率：</div>
             <div class="return-dual-col">
               <div>
                 <div class="return-col-item"><span>3個月</span><span class="${getValClass(d.return_3m)}">${fmtPct(d.return_3m, true)}</span></div>
@@ -474,7 +510,7 @@
       if (currentView === 'dividend') {
         thead.innerHTML = `
           <tr>
-            <th>最愛</th>
+            <th style="width:36px; text-align:center;">最愛</th>
             <th style="text-align:left;">比對 / 代碼 / 名稱</th>
             <th>現價</th>
             <th>ETF規模(億)</th>
@@ -503,9 +539,9 @@
               <td style="text-align:left;">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="checkbox" class="compare-checkbox" onchange="toggleCompare('${d.symbol}')" ${isChecked}>
-                  <div>
-                    <strong style="color:var(--primary); font-size:15px;">${d.symbol}</strong>
-                    <span style="font-size:11px; color:var(--sub-text); display:block; font-weight:400;">${d.name || ''}</span>
+                  <div style="overflow:hidden;">
+                    <strong style="color:var(--primary); font-size:14px; display:block; line-height:1.1;">${d.symbol}</strong>
+                    <span style="font-size:11px; color:var(--sub-text); display:block; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.name || ''}</span>
                   </div>
                 </div>
               </td>
@@ -527,7 +563,7 @@
       } else if (currentView === 'performance') {
         thead.innerHTML = `
           <tr>
-            <th>最愛</th>
+            <th style="width:36px; text-align:center;">最愛</th>
             <th style="text-align:left;">比對 / 代碼 / 名稱</th>
             <th>現價</th>
             <th>240MA年線</th>
@@ -555,9 +591,9 @@
               <td style="text-align:left;">
                 <div style="display:flex; align-items:center; gap:6px;">
                   <input type="checkbox" class="compare-checkbox" onchange="toggleCompare('${d.symbol}')" ${isChecked}>
-                  <div>
-                    <strong style="color:var(--primary); font-size:15px;">${d.symbol}</strong>
-                    <span style="font-size:11px; color:var(--sub-text); display:block; font-weight:400;">${d.name || ''}</span>
+                  <div style="overflow:hidden;">
+                    <strong style="color:var(--primary); font-size:14px; display:block; line-height:1.1;">${d.symbol}</strong>
+                    <span style="font-size:11px; color:var(--sub-text); display:block; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${d.name || ''}</span>
                   </div>
                 </div>
               </td>
@@ -585,7 +621,7 @@
     }
 
     // ==========================================
-    // 6. 多檔橫向比對 (含分組標題 Sticky 鎖定修復)
+    // 6. 多檔橫向比對 Modal
     // ==========================================
     function toggleCompare(symbol) {
       if (selectedCompareSymbols.has(symbol)) {
@@ -624,16 +660,7 @@
       const maxReturn1Y = Math.max(...compareList.map(d => d.annual_return || -999));
       const maxReturn3Y = Math.max(...compareList.map(d => d.return_3y || -999));
 
-      // 💡【修復分組小標題】：讓分組列 (如 📌 基本資訊與規模) 的文字死鎖在 left: 0
-      const groupHeader = (title) => `
-        <tr style="background:rgba(255,255,255,0.03);">
-          <td style="text-align:left; font-weight:bold; color:var(--primary); position:sticky; left:0; z-index:32; background:#0f172a !important;">
-            ${title}
-          </td>
-          <td colspan="${compareList.length}"></td>
-        </tr>
-      `;
-
+      // 💡【關鍵修復】：將分組標題文字加上 <span class="compare-group-title"> 固定住
       let html = `
         <thead>
           <tr>
@@ -641,13 +668,17 @@
             ${compareList.map(d => `
               <th>
                 <div style="font-size:15px; color:var(--primary); font-weight:800;">${d.symbol}</div>
-                <div style="font-size:11px; color:var(--sub-text); font-weight:normal;">${d.name || ''}</div>
+                <div style="font-size:11px; color:var(--sub-text); font-weight:normal; white-space:nowrap;">${d.name || ''}</div>
               </th>
             `).join('')}
           </tr>
         </thead>
         <tbody>
-          ${groupHeader('📌 基本資訊與規模')}
+          <tr class="compare-group-row">
+            <td colspan="${compareList.length + 1}">
+              <span class="compare-group-title">📌 基本資訊與規模</span>
+            </td>
+          </tr>
           <tr>
             <td style="text-align:left; color:var(--sub-text);">現價</td>
             ${compareList.map(d => `<td class="highlight-val">$${fmt(d.price)}</td>`).join('')}
@@ -661,7 +692,11 @@
             ${compareList.map(d => `<td>${getCycleBadgeHtml(d.payout_cycle)}</td>`).join('')}
           </tr>
 
-          ${groupHeader('💰 配息表現')}
+          <tr class="compare-group-row">
+            <td colspan="${compareList.length + 1}">
+              <span class="compare-group-title">💰 配息表現</span>
+            </td>
+          </tr>
           <tr>
             <td style="text-align:left; color:var(--sub-text);">近四季累積配息</td>
             ${compareList.map(d => `<td class="highlight-val">$${fmt(d.dividend_4q)}</td>`).join('')}
@@ -680,7 +715,11 @@
             }).join('')}
           </tr>
 
-          ${groupHeader('📈 績效與年化報酬率對決')}
+          <tr class="compare-group-row">
+            <td colspan="${compareList.length + 1}">
+              <span class="compare-group-title">📈 績效與年化報酬率對決</span>
+            </td>
+          </tr>
           <tr>
             <td style="text-align:left; color:var(--sub-text);">3 個月報酬率</td>
             ${compareList.map(d => `<td class="${getValClass(d.return_3m)}">${fmtPct(d.return_3m, true)}</td>`).join('')}
