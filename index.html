@@ -14,97 +14,94 @@
     }
     * { box-sizing: border-box; }
     
-    /* 💡 極致清晰銳利字型設定 (徹底解決粗體模糊黏在一起) */
+    /* 極致清晰銳利字型設定 */
     body { 
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
       background: var(--bg); 
       color: var(--text); 
       margin: 0; 
-      padding: 20px; 
+      padding: 16px; 
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
     .container { max-width: 1720px; margin: 0 auto; }
     
     /* 標題 Bar */
-    .header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
-    h1 { margin: 0; font-size: 24px; color: var(--primary); display: flex; align-items: center; gap: 8px; font-weight: 800; }
+    .header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+    h1 { margin: 0; font-size: 22px; color: var(--primary); display: flex; align-items: center; gap: 8px; font-weight: 800; }
     
     /* 控制區：搜尋、分類、入帳週期與排序 */
-    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: var(--card-bg); padding: 15px 18px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
-    input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 9px 14px; border-radius: 8px; font-size: 14px; outline: none; font-weight: 500; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: var(--card-bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px; }
+    input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 14px; outline: none; font-weight: 500; }
     input:focus, select:focus { border-color: var(--primary); }
     
-    .btn { background: var(--primary); color: #0f172a; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn { background: var(--primary); color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
     .btn:hover { opacity: 0.9; }
     .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
     .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
 
     /* 檢視切換頁籤 */
-    .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 700; }
+    .view-tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 700; }
     .tab-btn.active { background: var(--primary); color: #0f172a; border-color: var(--primary); }
 
-    /* ✨ 卡片檢視網格 (排版放大與清晰化) */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 18px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px; position: relative; transition: transform 0.2s, border-color 0.2s; }
+    /* 卡片檢視網格 */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 16px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; position: relative; transition: transform 0.2s, border-color 0.2s; }
     .card:hover { border-color: var(--primary); transform: translateY(-2px); }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     .card-title { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
     .card-sub { font-size: 13px; color: var(--sub-text); margin-top: 3px; font-weight: 400; }
     
     .data-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 14px; margin-bottom: 12px; }
-    .row-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
+    .row-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
     .row-item span:first-child { color: var(--sub-text); font-size: 13px; }
     
-    /* ✨ 卡片雙欄年化報酬率對齊佈局 */
+    /* 卡片雙欄年化報酬率對齊佈局 */
     .return-dual-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; margin-top: 8px; }
     .return-col-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 14px; }
     .return-col-item span:first-child { color: var(--sub-text); font-size: 13px; }
 
-    /* ✨ 表格檢視區域 (高解析度字體、高清對比) */
+    /* 表格檢視區域 */
     .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: collapse; text-align: right; font-size: 15px; }
-    th, td { padding: 13px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
     th { background: #0f172a; color: var(--sub-text); font-weight: 700; cursor: pointer; font-size: 14px; }
     
-    /* 📌 Sticky 第一二欄鎖定 */
+    /* 📌 主表格 Sticky 第一二欄 */
     th:first-child, td:first-child { 
       position: sticky; 
       left: 0; 
       z-index: 20; 
       text-align: center; 
       background: #1e293b !important; 
-      width: 52px;
-      min-width: 52px;
-      max-width: 52px;
+      width: 50px;
+      min-width: 50px;
+      max-width: 50px;
     }
 
     th:nth-child(2), td:nth-child(2) {
       position: sticky;
-      left: 52px;
+      left: 50px;
       z-index: 20;
       text-align: left;
       background: #1e293b !important;
       box-shadow: 4px 0 8px rgba(0, 0, 0, 0.4);
-      min-width: 180px;
+      min-width: 170px;
     }
     
     th:first-child, th:nth-child(2) { background: #0f172a !important; z-index: 22; }
     tr:hover td { background: rgba(255, 255, 255, 0.04) !important; }
     tr:hover td:first-child, tr:hover td:nth-child(2) { background: #273549 !important; }
 
-    /* 最愛星星按鈕 */
     .star-btn { 
       background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b; 
       display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%;
     }
     .star-btn.active { color: #f59e0b; }
-
-    /* 比對 Checkbox */
     .compare-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
 
-    /* ✨ 漲跌與數據銳利高亮 (高對比色系，絕不糊在一起) */
+    /* 漲跌與數據高亮 */
     .num-up { color: #fb7185; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
     .num-dn { color: #34d399; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
     .num-neutral { color: var(--text); font-weight: 500; }
@@ -119,14 +116,34 @@
     .cycle-q3 { background-color: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
     .cycle-default { background-color: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
 
-    /* Modal 比對彈窗 */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    /* Modal 比對彈窗與【修正第一欄 Sticky 鎖定 Bug】 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 12px; }
     .modal-overlay.active { display: flex; }
-    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 1400px; max-height: 90vh; overflow-y: auto; padding: 24px; position: relative; }
-    .modal-close { position: absolute; top: 16px; right: 20px; font-size: 24px; cursor: pointer; color: var(--sub-text); }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 1400px; max-height: 92vh; overflow-y: auto; padding: 18px; position: relative; }
+    .modal-close { position: absolute; top: 12px; right: 16px; font-size: 26px; cursor: pointer; color: var(--sub-text); }
     
-    .compare-table th { text-align: center; background: #0f172a; }
-    .compare-table td { text-align: center; }
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th, .compare-table td { padding: 12px 14px; text-align: center; border-bottom: 1px solid var(--border); }
+    
+    /* 💡【關鍵修復】：橫向比對彈窗的第一欄死鎖 (Sticky)，防止滾動時亂成一團 */
+    .compare-table th:first-child, 
+    .compare-table td:first-child { 
+      position: sticky !important; 
+      left: 0 !important; 
+      z-index: 30 !important; 
+      text-align: left !important; 
+      background: #0f172a !important; /* 強制不透明實色底 */
+      box-shadow: 4px 0 8px rgba(0, 0, 0, 0.5); 
+      min-width: 130px; 
+      max-width: 130px; 
+      width: 130px;
+    }
+    
+    .compare-table th:first-child { 
+      z-index: 35 !important; 
+      background: #090d16 !important; 
+    }
+
     .best-badge { background: rgba(244, 63, 94, 0.2); color: var(--up); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
   </style>
 </head>
@@ -137,7 +154,7 @@
     <!-- 頂部標題與狀態 Bar -->
     <div class="header-bar">
       <h1>📊 Bin｜ETF 數據中心</h1>
-      <div id="compareBar" style="display: none; align-items: center; gap: 12px;">
+      <div id="compareBar" style="display: none; align-items: center; gap: 10px;">
         <span id="compareCount" style="color: var(--primary); font-weight: bold; font-size: 14px;">已選擇 0 檔標的</span>
         <button class="btn" onclick="openCompareModal()">🚀 開啟橫向多檔比對</button>
         <button class="btn btn-outline" onclick="clearCompare()">清空比對</button>
@@ -160,7 +177,6 @@
         <option value="年配">年配 / 半年配 (1~2次)</option>
       </select>
 
-      <!-- 💡 依據要求：排序選單移至最右側 -->
       <select id="sortSelect" onchange="filterData()" style="margin-left: auto;">
         <option value="symbol">依代碼排序</option>
         <option value="yield_desc">殖利率 (高 → 低)</option>
@@ -174,7 +190,7 @@
       </div>
     </div>
 
-    <!-- 💡 預設分頁：預設開啟「查看 ETF 配息」 -->
+    <!-- 預設開啟「查看 ETF 配息」 -->
     <div class="view-tabs">
       <button class="tab-btn" onclick="switchView('card', this)">🎴 卡片檢視</button>
       <button class="tab-btn active" onclick="switchView('dividend', this)">💰 查看 ETF 配息</button>
@@ -199,7 +215,7 @@
     <div class="modal-content">
       <span class="modal-close" onclick="closeCompareModal()">&times;</span>
       <h2 style="margin-top: 0; color: var(--primary);">⚖️ ETF 多檔橫向深度比對</h2>
-      <p style="color: var(--sub-text); font-size: 13px; margin-bottom: 20px;">跨緯度評估不同 ETF 之股息殖利率、年化報酬率與績效表現</p>
+      <p style="color: var(--sub-text); font-size: 13px; margin-bottom: 16px;">跨緯度評估不同 ETF 之股息殖利率、年化報酬率與績效表現</p>
       
       <div class="table-wrapper">
         <table class="compare-table" id="compareMatrixTable"></table>
@@ -219,9 +235,7 @@
     let filteredEtfData = [];
     let selectedCompareSymbols = new Set();
     
-    // 💡 依據要求：預設預覽頁面設為 'dividend' (查看 ETF 配息)
     let currentView = 'dividend'; 
-    
     let favorites = JSON.parse(localStorage.getItem('etf_favorites')) || [];
 
     const fmt = num => (num !== null && num !== undefined && !isNaN(num)) ? Number(num).toLocaleString() : '-';
@@ -380,7 +394,7 @@
     }
 
     // ==========================================
-    // 4. 🎴 卡片檢視渲染 (依據要求重新排版與增加最新配息)
+    // 4. 🎴 卡片檢視渲染
     // ==========================================
     function renderCardView() {
       const container = document.getElementById('cardView');
@@ -416,8 +430,6 @@
               <div class="row-item"><span>規模(億)</span><span>$${fmt(d.market_cap)}</span></div>
               <div class="row-item"><span>近四季配息</span><span class="highlight-val">$${fmt(d.dividend_4q)}</span></div>
               <div class="row-item"><span>現價殖利率</span><span class="highlight-val">${fmtPct(d.yield)}</span></div>
-              
-              <!-- 💡 依據要求：加入「最新配息」與並排發放日/入帳週期 -->
               <div class="row-item"><span>最新配息</span><span class="text-blue">$${fmt(d.dividend_latest)}</span></div>
               <div class="row-item"><span>最新發放日</span><span>${d.pay_date || '-'}</span></div>
             </div>
@@ -427,7 +439,7 @@
               ${getCycleBadgeHtml(d.payout_cycle)}
             </div>
 
-            <!-- 💡 依據要求：改為「左右雙欄對齊」年化報酬率卡片 -->
+            <!-- 左右雙欄對齊年化報酬率 -->
             <div style="font-size:12px; color:var(--sub-text); margin-top:10px; font-weight:600;">📈 多期間績效與年化報酬率：</div>
             <div class="return-dual-col">
               <div>
@@ -448,7 +460,7 @@
     }
 
     // ==========================================
-    // 5. 表格渲染 Engine (文字對比加強、高清顯示)
+    // 5. 表格渲染 Engine
     // ==========================================
     function renderTableView() {
       const thead = document.getElementById('tableHead');
@@ -618,10 +630,10 @@
       let html = `
         <thead>
           <tr>
-            <th style="text-align:left; min-width:140px;">比對項目</th>
+            <th style="text-align:left;">比對項目</th>
             ${compareList.map(d => `
               <th>
-                <div style="font-size:16px; color:var(--primary);">${d.symbol}</div>
+                <div style="font-size:16px; color:var(--primary); font-weight:800;">${d.symbol}</div>
                 <div style="font-size:12px; color:var(--sub-text); font-weight:normal;">${d.name || ''}</div>
               </th>
             `).join('')}
