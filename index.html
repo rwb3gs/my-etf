@@ -4,362 +4,710 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bin｜ETF 數據中心</title>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg: #0f172a; --card-bg: #1e293b; --border: #334155;
       --text: #f8fafc; --sub-text: #94a3b8; --primary: #38bdf8;
       --up: #f43f5e; --dn: #10b981;
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .container { max-width: 1600px; margin: 0 auto; }
-    h1 { margin-bottom: 20px; font-size: 24px; color: var(--primary); }
+    * { box-sizing: border-box; }
     
-    /* 頁籤控制 */
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: bold; }
-    .tab-btn.active { background: var(--primary); color: #000; border-color: var(--primary); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    /* 💡 極致清晰銳利字型設定 (徹底解決粗體模糊黏在一起) */
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      margin: 0; 
+      padding: 20px; 
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .container { max-width: 1720px; margin: 0 auto; }
+    
+    /* 標題 Bar */
+    .header-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
+    h1 { margin: 0; font-size: 24px; color: var(--primary); display: flex; align-items: center; gap: 8px; font-weight: 800; }
+    
+    /* 控制區：搜尋、分類、入帳週期與排序 */
+    .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: var(--card-bg); padding: 15px 18px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 20px; }
+    input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 9px 14px; border-radius: 8px; font-size: 14px; outline: none; font-weight: 500; }
+    input:focus, select:focus { border-color: var(--primary); }
+    
+    .btn { background: var(--primary); color: #0f172a; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn:hover { opacity: 0.9; }
+    .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline:hover { background: rgba(56, 189, 248, 0.1); }
 
-    /* 控制區與搜尋 */
-    .controls { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-    input[type="text"], select { background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; outline: none; }
+    /* 檢視切換頁籤 */
+    .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 700; }
+    .tab-btn.active { background: var(--primary); color: #0f172a; border-color: var(--primary); }
+
+    /* ✨ 卡片檢視網格 (排版放大與清晰化) */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 18px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px; position: relative; transition: transform 0.2s, border-color 0.2s; }
+    .card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .card-title { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+    .card-sub { font-size: 13px; color: var(--sub-text); margin-top: 3px; font-weight: 400; }
     
-    /* 表格樣式 */
-    .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
-    th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    th { background: #0f172a; color: var(--sub-text); font-weight: 600; cursor: pointer; }
+    .data-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 14px; margin-bottom: 12px; }
+    .row-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.06); }
+    .row-item span:first-child { color: var(--sub-text); font-size: 13px; }
     
-    /* 鎖定前兩欄：最愛 (left: 0) 與 代碼 (left: 42px) */
+    /* ✨ 卡片雙欄年化報酬率對齊佈局 */
+    .return-dual-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; margin-top: 8px; }
+    .return-col-item { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 14px; }
+    .return-col-item span:first-child { color: var(--sub-text); font-size: 13px; }
+
+    /* ✨ 表格檢視區域 (高解析度字體、高清對比) */
+    .table-wrapper { overflow-x: auto; background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 15px; }
+    th, td { padding: 13px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { background: #0f172a; color: var(--sub-text); font-weight: 700; cursor: pointer; font-size: 14px; }
+    
+    /* 📌 Sticky 第一二欄鎖定 */
     th:first-child, td:first-child { 
       position: sticky; 
       left: 0; 
-      z-index: 2; 
+      z-index: 20; 
       text-align: center; 
-      background: #1e293b; 
-      width: 43px;
-      min-width: 43px;
-      max-width: 43px; /* 👈 新增這行！強制第一欄死鎖在 43px，不被內容擠大 */
-      box-sizing: border-box;
+      background: #1e293b !important; 
+      width: 52px;
+      min-width: 52px;
+      max-width: 52px;
     }
 
     th:nth-child(2), td:nth-child(2) {
       position: sticky;
-      left: 42px;       /* 👈 改為 42px (向左覆蓋 1px 消除縫隙與平移跳動) */
-      z-index: 2;
+      left: 52px;
+      z-index: 20;
       text-align: left;
-      background: #1e293b;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      background: #1e293b !important;
+      box-shadow: 4px 0 8px rgba(0, 0, 0, 0.4);
+      min-width: 180px;
     }
     
-    th:first-child, th:nth-child(2) { background: #0f172a; z-index: 3; }
-    th:nth-child(3), td:nth-child(3) { text-align: left; }
-    tr:hover { background: rgba(255, 255, 255, 0.03); }
+    th:first-child, th:nth-child(2) { background: #0f172a !important; z-index: 22; }
+    tr:hover td { background: rgba(255, 255, 255, 0.04) !important; }
+    tr:hover td:first-child, tr:hover td:nth-child(2) { background: #273549 !important; }
 
-    /* 修正後：強制尺寸與完美置中 */
-    .star-btn {
-      background: none;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-      color: #64748b;
-      transition: transform 0.1s ease;
-      
-      /* 新增以下四行 */
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      line-height: 1;
+    /* 最愛星星按鈕 */
+    .star-btn { 
+      background: none; border: none; font-size: 18px; cursor: pointer; color: #64748b; 
+      display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%;
     }
     .star-btn.active { color: #f59e0b; }
-    .star-btn:active { transform: scale(1.25); }
+
+    /* 比對 Checkbox */
+    .compare-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+
+    /* ✨ 漲跌與數據銳利高亮 (高對比色系，絕不糊在一起) */
+    .num-up { color: #fb7185; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
+    .num-dn { color: #34d399; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
+    .num-neutral { color: var(--text); font-weight: 500; }
+    .highlight-val { color: var(--primary); font-weight: 800; font-size: 16px; letter-spacing: 0.02em; }
+    .text-blue { color: #60a5fa; font-weight: 700; font-size: 16px; letter-spacing: 0.02em; }
+
+    /* 配息組別彩色標籤 */
+    .cycle-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-block; }
+    .cycle-monthly { background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+    .cycle-q1 { background-color: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .cycle-q2 { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .cycle-q3 { background-color: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .cycle-default { background-color: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+    /* Modal 比對彈窗 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 1400px; max-height: 90vh; overflow-y: auto; padding: 24px; position: relative; }
+    .modal-close { position: absolute; top: 16px; right: 20px; font-size: 24px; cursor: pointer; color: var(--sub-text); }
     
-    /* 比對卡片區 */
-    .compare-selector { background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; }
-    .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
-    .compare-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; }
-    .compare-card h3 { margin: 0 0 10px 0; color: var(--primary); display: flex; justify-content: space-between; }
-    .row-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
-    
-    /* 顏色標籤 */
-    .up { color: var(--up); font-weight: 600; }
-    .dn { color: var(--dn); font-weight: 600; }
-    .tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; background: var(--border); }
-    .text-blue { color: #60a5fa; }
+    .compare-table th { text-align: center; background: #0f172a; }
+    .compare-table td { text-align: center; }
+    .best-badge { background: rgba(244, 63, 94, 0.2); color: var(--up); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>📊 Bin｜ETF 數據中心</h1>
+  <div class="container">
+    
+    <!-- 頂部標題與狀態 Bar -->
+    <div class="header-bar">
+      <h1>📊 Bin｜ETF 數據中心</h1>
+      <div id="compareBar" style="display: none; align-items: center; gap: 12px;">
+        <span id="compareCount" style="color: var(--primary); font-weight: bold; font-size: 14px;">已選擇 0 檔標的</span>
+        <button class="btn" onclick="openCompareModal()">🚀 開啟橫向多檔比對</button>
+        <button class="btn btn-outline" onclick="clearCompare()">清空比對</button>
+      </div>
+    </div>
 
-  <!-- 切換頁籤 -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('all-view', this)">完整資料總覽</button>
-    <button class="tab-btn" onclick="switchTab('compare-view', this)">多檔 ETF 交叉比對</button>
-  </div>
-
-  <!-- 分頁一：總覽表格 -->
-  <div id="all-view" class="tab-content active">
+    <!-- 控制區：搜尋、分類、入帳週期，最右側放「排序選單」 -->
     <div class="controls">
-      <input type="text" id="search" placeholder="搜尋代碼或名稱..." oninput="filterTable()">
-      <select id="cat-filter" onchange="filterTable()">
-        <option value="">所有類別</option>
+      <input type="text" id="searchInput" placeholder="搜尋代碼或名稱 (例: 00878)" oninput="filterData()">
+      
+      <select id="categorySelect" onchange="filterData()">
+        <option value="">全部分類</option>
         <option value="FAVORITE">⭐ 我的最愛</option>
       </select>
+
+      <select id="payoutSelect" onchange="filterData()">
+        <option value="">全部入帳週期</option>
+        <option value="月配">月配息</option>
+        <option value="季配">季配息 (3,6,9,12 等 4次)</option>
+        <option value="年配">年配 / 半年配 (1~2次)</option>
+      </select>
+
+      <!-- 💡 依據要求：排序選單移至最右側 -->
+      <select id="sortSelect" onchange="filterData()" style="margin-left: auto;">
+        <option value="symbol">依代碼排序</option>
+        <option value="yield_desc">殖利率 (高 → 低)</option>
+        <option value="market_cap_desc">規模 (大 → 小)</option>
+        <option value="return_1y_desc">1年報酬率 (高 → 低)</option>
+        <option value="return_3y_desc">3年化報酬率 (高 → 低)</option>
+      </select>
+
+      <div style="font-size: 14px; color: var(--sub-text); font-weight: 600;" id="dataCount">
+        載入中...
+      </div>
     </div>
-    <div class="table-container">
-      <table id="etf-table">
-        <thead>
-          <tr>
-            <th>最愛</th>
-            <th onclick="sortTable('symbol')">股票代碼</th>
-            <th onclick="sortTable('name')">股票名稱</th>
-            <th onclick="sortTable('price')">現價</th>
-            <th onclick="sortTable('ma240')">240MA年線</th>
-            <th onclick="sortTable('bias')">年線乖離率(%)</th>
-            <th onclick="sortTable('market_cap')">ETF規模(億)</th>
-            <th onclick="sortTable('dividend_4q')">近四季配息</th>
-            <th onclick="sortTable('yield')">現價殖利率</th>
-            <th onclick="sortTable('annual_return')">年報酬率</th>
-            <th onclick="sortTable('ytd_dividend')">今年度累計配息</th>
-            <th onclick="sortTable('latest_dividend')">最新配息</th>
-            <th>最新除息日期</th>
-            <th>最新股利發放日</th>
-            <th onclick="sortTable('dividend_cycle')">除息週期</th>
-            <th onclick="sortTable('payout_cycle')">入帳週期</th>
-            <th>類別</th>
-          </tr>
-        </thead>
-        <tbody id="etf-tbody"></tbody>
+
+    <!-- 💡 預設分頁：預設開啟「查看 ETF 配息」 -->
+    <div class="view-tabs">
+      <button class="tab-btn" onclick="switchView('card', this)">🎴 卡片檢視</button>
+      <button class="tab-btn active" onclick="switchView('dividend', this)">💰 查看 ETF 配息</button>
+      <button class="tab-btn" onclick="switchView('performance', this)">📈 查看 ETF 績效</button>
+    </div>
+
+    <!-- 1. 卡片視圖容器 -->
+    <div id="cardView" class="card-grid" style="display: none;"></div>
+
+    <!-- 2. 表格視圖容器 -->
+    <div id="tableView" class="table-wrapper">
+      <table id="mainTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
       </table>
     </div>
+
   </div>
 
-  <!-- 分頁二：多檔比對 -->
-  <div id="compare-view" class="tab-content">
-    <div class="compare-selector">
-      <label>選擇要比對的 ETF（可多選）：</label>
-      <select id="compare-select" onchange="addCompareItem(this.value)">
-        <option value="">-- 請選擇 ETF --</option>
-      </select>
-    </div>
-    <div id="compare-grid" class="compare-grid"></div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = 'https://sktrmemtvarutrbcpwij.supabase.co';
-  const PUBLISHABLE_KEY = 'sb_publishable_iPdnGKeCEfPuH2xZBYK4Sg_G8ivGx1p';
-  const _supabase = supabase.createClient(SUPABASE_URL, PUBLISHABLE_KEY);
-
-  let rawData = [];
-  let compareList = [];
-  const EXCLUDED_CATEGORIES = ['金融股', '其他個股'];
-
-  // 讀取/儲存最愛清單 (localStorage)
-  let favorites = JSON.parse(localStorage.getItem('etf_favorites')) || [];
-
-  function toggleFavorite(symbol) {
-    const index = favorites.indexOf(symbol);
-    if (index > -1) {
-      favorites.splice(index, 1);
-    } else {
-      favorites.push(symbol);
-    }
-    localStorage.setItem('etf_favorites', JSON.stringify(favorites));
-    filterTable(); // 重新整理視圖
-  }
-
-  // 動態判斷位數：若有小數點第 3 位則顯示 3 位，否則預設 2 位
-  const fmt = (v) => {
-    if (v == null || v === '') return '—';
-    let num = Number(v);
-    if (isNaN(num)) return v;
-
-    const hasDecimal3 = Math.abs(num * 100 - Math.round(num * 100)) > 0.0001;
-    return num.toFixed(hasDecimal3 ? 3 : 2);
-  };
-  
-  // 股利配息專用：一律顯示 3 位小數
-  const fmtDividend = (v) => {
-    if (v == null || v === '') return '—';
-    let num = Number(v);
-    return isNaN(num) ? v : num.toFixed(3);
-  };
-  
-  // 百分比格式化
-  const fmtPercent = (v, showSign = false) => {
-    if (v == null || v === '') return '—';
-    let num = Number(v);
-    if (isNaN(num)) return v;
-    const formatted = num.toFixed(2) + '%';
-    return (showSign && num > 0) ? '+' + formatted : formatted;
-  };
-
-  const fmtDate = (d) => {
-    if (!d || d === '—') return '—';
-    const date = new Date(d);
-    return isNaN(date.getTime()) ? d : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  };
-
-  // 初始化載入
-  async function loadData() {
-    const { data, error } = await _supabase.from('etf_data').select('*').order('symbol');
-    if (error) return alert('載入失敗: ' + error.message);
-    
-    // 過濾非 ETF 資料
-    rawData = data.filter(d => !EXCLUDED_CATEGORIES.includes(d.category));
-
-    renderTable(rawData);
-    initOptions(rawData);
-  }
-
-  // 表格渲染
-  function renderTable(data) {
-    const tbody = document.getElementById('etf-tbody');
-    if (data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:20px;color:var(--sub-text);">查無符合的 ETF 資料</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = data.map(item => {
-      const biasStr = fmtPercent(item.bias, true);
-      const biasClass = biasStr.includes('+') ? 'up' : (biasStr.includes('-') ? 'dn' : '');
-
-      const annualStr = fmtPercent(item.annual_return, true);
-      const annualClass = annualStr.includes('+') ? 'up' : (annualStr.includes('-') ? 'dn' : '');
-
-      const isFav = favorites.includes(item.symbol);
-      const starIcon = isFav ? '⭐' : '☆';
-      const starClass = isFav ? 'star-btn active' : 'star-btn';
-
-      return `
-        <tr>
-          <td>
-            <button onclick="toggleFavorite('${item.symbol}')" class="${starClass}" title="${isFav ? '取消最愛' : '加入最愛'}">
-              ${starIcon}
-            </button>
-          </td>
-          <td><b>${item.symbol || '—'}</b></td>
-          <td>${item.name || '—'}</td>
-          <td><b>${fmt(item.price)}</b></td>
-          <td>${fmt(item.ma240)}</td>
-          <td class="${biasClass}">${biasStr}</td>
-          <td>${fmt(item.market_cap)}</td>
-          <td class="text-blue">${fmtDividend(item.dividend_4q)}</td>
-          <td class="text-blue">${fmtPercent(item.yield)}</td>
-          <td class="${annualClass}">${annualStr}</td>
-          <td class="text-blue">${fmtDividend(item.dividend_ytd)}</td>
-          <td class="text-blue">${fmtDividend(item.dividend_latest)}</td>
-          <td>${fmtDate(item.ex_date)}</td>
-          <td>${fmtDate(item.pay_date)}</td>
-          <td><span class="tag">${item.dividend_cycle || '-'}</span></td>
-          <td><span class="tag">${item.payout_cycle || '—'}</span></td>
-          <td><span class="tag">${item.category || '—'}</span></td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  // 初始化選單類別
-  function initOptions(data) {
-    const categories = [...new Set(data.map(d => d.category).filter(Boolean))];
-    const catSelect = document.getElementById('cat-filter');
-    catSelect.innerHTML = '<option value="">所有類別</option><option value="FAVORITE">⭐ 我的最愛</option>';
-    categories.forEach(c => catSelect.add(new Option(c, c)));
-
-    const compSelect = document.getElementById('compare-select');
-    compSelect.innerHTML = '<option value="">-- 請選擇 ETF --</option>';
-    data.forEach(d => compSelect.add(new Option(`${d.symbol} ${d.name}`, d.symbol)));
-  }
-
-  // 搜尋與篩選
-  function filterTable() {
-    const q = document.getElementById('search').value.toLowerCase().trim();
-    const cat = document.getElementById('cat-filter').value;
-
-    const filtered = rawData.filter(d => {
-      const matchQ = (d.symbol && d.symbol.toLowerCase().includes(q)) || (d.name && d.name.toLowerCase().includes(q));
+  <!-- 多檔橫向比對彈出視窗 Modal -->
+  <div id="compareModal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeCompareModal()">&times;</span>
+      <h2 style="margin-top: 0; color: var(--primary);">⚖️ ETF 多檔橫向深度比對</h2>
+      <p style="color: var(--sub-text); font-size: 13px; margin-bottom: 20px;">跨緯度評估不同 ETF 之股息殖利率、年化報酬率與績效表現</p>
       
-      let matchCat = false;
-      if (!cat) {
-        matchCat = true;
-      } else if (cat === 'FAVORITE') {
-        matchCat = favorites.includes(d.symbol);
-      } else {
-        matchCat = d.category === cat;
+      <div class="table-wrapper">
+        <table class="compare-table" id="compareMatrixTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. Supabase 連線與狀態設定
+    // ==========================================
+    const SUPABASE_URL = 'https://sktrmemtvarutrbcpwij.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_iPdnGKeCEfPuH2xZBYK4Sg_G8ivGx1p';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let rawEtfData = [];
+    let filteredEtfData = [];
+    let selectedCompareSymbols = new Set();
+    
+    // 💡 依據要求：預設預覽頁面設為 'dividend' (查看 ETF 配息)
+    let currentView = 'dividend'; 
+    
+    let favorites = JSON.parse(localStorage.getItem('etf_favorites')) || [];
+
+    const fmt = num => (num !== null && num !== undefined && !isNaN(num)) ? Number(num).toLocaleString() : '-';
+    const fmtPct = (val, showSign = false) => {
+      if (val === null || val === undefined || isNaN(val)) return '-';
+      const num = Number(val);
+      const str = num.toFixed(2) + '%';
+      return (showSign && num > 0) ? '+' + str : str;
+    };
+    
+    function getValClass(val) {
+      if (val === null || val === undefined || isNaN(val) || val === 0) return 'num-neutral';
+      return val > 0 ? 'num-up' : 'num-dn';
+    }
+
+    const cleanSymbol = sym => {
+      let str = String(sym || '').trim().toUpperCase();
+      if (!str) return '';
+      if (str.length === 3 && /^\d/.test(str)) return str.padStart(5, '0');
+      if (str.length === 4 && /[A-Z]$/.test(str)) return str.padStart(5, '0');
+      return str;
+    };
+
+    function getCycleBadgeHtml(cycleStr) {
+      if (!cycleStr || cycleStr === '-') return `<span class="cycle-badge cycle-default">-</span>`;
+      
+      const str = String(cycleStr).trim();
+      if (str.includes('月配')) {
+        return `<span class="cycle-badge cycle-monthly">${str}</span>`;
       }
 
-      return matchQ && matchCat;
-    });
-    renderTable(filtered);
-  }
+      const months = str.split(',').map(m => parseInt(m.trim(), 10)).filter(m => !isNaN(m));
+      if (months.includes(1) || months.includes(4) || months.includes(7) || months.includes(10)) {
+        return `<span class="cycle-badge cycle-q1">${str}</span>`;
+      }
+      if (months.includes(2) || months.includes(5) || months.includes(8) || months.includes(11)) {
+        return `<span class="cycle-badge cycle-q2">${str}</span>`;
+      }
+      if (months.includes(3) || months.includes(6) || months.includes(9) || months.includes(12)) {
+        return `<span class="cycle-badge cycle-q3">${str}</span>`;
+      }
 
-  // 多檔比對邏輯
-  function addCompareItem(symbol) {
-    if (!symbol || compareList.includes(symbol)) return;
-    if (compareList.length >= 4) return alert('最多同時比對 4 檔 ETF');
-    
-    compareList.push(symbol);
-    renderCompareCards();
-  }
+      return `<span class="cycle-badge cycle-default">${str}</span>`;
+    }
 
-  function removeCompareItem(symbol) {
-    compareList = compareList.filter(s => s !== symbol);
-    renderCompareCards();
-  }
+    function toggleFavorite(symbol, e) {
+      if (e) e.stopPropagation();
+      const index = favorites.indexOf(symbol);
+      if (index > -1) favorites.splice(index, 1);
+      else favorites.push(symbol);
 
-  // 卡片比對渲染
-  function renderCompareCards() {
-    const grid = document.getElementById('compare-grid');
-    grid.innerHTML = compareList.map(sym => {
-      const d = rawData.find(item => item.symbol === sym);
-      if (!d) return '';
+      localStorage.setItem('etf_favorites', JSON.stringify(favorites));
+      filterData();
+    }
 
-      const biasStr = fmtPercent(d.bias, true);
-      const biasClass = biasStr.includes('+') ? 'up' : (biasStr.includes('-') ? 'dn' : '');
+    // ==========================================
+    // 2. 載入 Supabase 數據
+    // ==========================================
+    async function loadEtfData() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('etf_data')
+          .select(`
+            symbol, name, price, ma240, bias, market_cap, dividend_4q, yield, 
+            annual_return, dividend_ytd, dividend_latest, ex_date, pay_date, 
+            dividend_cycle, payout_cycle, category,
+            return_3m, return_6m, return_ytd, return_2y, return_3y, return_5y
+          `)
+          .order('symbol', { ascending: true });
 
-      const annualStr = fmtPercent(d.annual_return, true);
-      const annualClass = annualStr.includes('+') ? 'up' : (annualStr.includes('-') ? 'dn' : '');
+        if (error) throw error;
 
-      return `
-        <div class="compare-card">
-          <h3>
-            <span>${d.symbol} ${d.name}</span>
-            <button onclick="removeCompareItem('${d.symbol}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;">✕</button>
-          </h3>
-          <div class="row-item"><span>類別</span><span>${d.category || '—'}</span></div>
-          <div class="row-item"><span>現價</span><span><b>${fmt(d.price)}</b></span></div>
-          <div class="row-item"><span>240MA年線</span><span>${fmt(d.ma240)}</span></div>
-          <div class="row-item"><span>年線乖離率</span><span class="${biasClass}">${biasStr}</span></div>
-          <div class="row-item"><span>規模(億)</span><span>${fmt(d.market_cap)}</span></div>
-          <div class="row-item"><span>近四季配息</span><span class="text-blue">${fmt(d.dividend_4q)}</span></div>
-          <div class="row-item"><span>現價殖利率</span><span class="text-blue">${fmtPercent(d.yield)}</span></div>
-          <div class="row-item"><span>年報酬率</span><span class="${annualClass}">${annualStr}</span></div>
-          <div class="row-item"><span>今年度累計配息</span><span class="text-blue">${fmt(d.dividend_ytd)}</span></div>
-          <div class="row-item"><span>最新配息</span><span class="text-blue">${fmt(d.dividend_latest)}</span></div>
-          <div class="row-item"><span>最新除息日期</span><span>${fmtDate(d.ex_date)}</span></div>
-          <div class="row-item"><span>最新股利發放日</span><span>${fmtDate(d.pay_date)}</span></div>
-          <div class="row-item"><span>除息週期</span><span>${d.dividend_cycle || '-'}</span></div>
-          <div class="row-item"><span>入帳週期</span><span>${d.payout_cycle || '-'}</span></div>
-        </div>
+        rawEtfData = (data || []).map(d => ({
+          ...d,
+          symbol: cleanSymbol(d.symbol)
+        })).filter(d => !['金融股', '其他個股'].includes(d.category));
+
+        populateCategories();
+        filterData();
+
+      } catch (err) {
+        console.error('載入 ETF 數據失敗:', err);
+        document.getElementById('tableView').innerHTML = `<div style="color:var(--up); padding:20px;">❌ 資料載入失敗：${err.message}</div>`;
+      }
+    }
+
+    function populateCategories() {
+      const categories = [...new Set(rawEtfData.map(d => d.category).filter(Boolean))];
+      const select = document.getElementById('categorySelect');
+      select.innerHTML = '<option value="">全部分類</option><option value="FAVORITE">⭐ 我的最愛</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    // ==========================================
+    // 3. 搜尋與週期篩選 Engine
+    // ==========================================
+    function filterData() {
+      const search = document.getElementById('searchInput').value.trim().toUpperCase();
+      const category = document.getElementById('categorySelect').value;
+      const payout = document.getElementById('payoutSelect').value;
+      const sort = document.getElementById('sortSelect').value;
+
+      filteredEtfData = rawEtfData.filter(d => {
+        const matchSearch = !search || d.symbol.includes(search) || (d.name && d.name.toUpperCase().includes(search));
+        
+        let matchCat = true;
+        if (category === 'FAVORITE') matchCat = favorites.includes(d.symbol);
+        else if (category) matchCat = d.category === category;
+
+        let matchPayout = true;
+        if (payout) {
+          const cycleStr = String(d.payout_cycle || '');
+          const monthCount = cycleStr.split(',').map(m => parseInt(m.trim(), 10)).filter(m => !isNaN(m)).length;
+
+          if (payout === '月配') {
+            matchPayout = cycleStr.includes('月配') || monthCount === 12;
+          } else if (payout === '季配') {
+            matchPayout = !cycleStr.includes('月配') && (monthCount === 4 || cycleStr.includes('季'));
+          } else if (payout === '年配') {
+            matchPayout = !cycleStr.includes('月配') && (monthCount >= 1 && monthCount <= 2 || cycleStr.includes('年') || cycleStr.includes('半'));
+          }
+        }
+
+        return matchSearch && matchCat && matchPayout;
+      });
+
+      // 排序
+      filteredEtfData.sort((a, b) => {
+        if (sort === 'yield_desc') return (b.yield || 0) - (a.yield || 0);
+        if (sort === 'market_cap_desc') return (b.market_cap || 0) - (a.market_cap || 0);
+        if (sort === 'return_1y_desc') return (b.annual_return || 0) - (a.annual_return || 0);
+        if (sort === 'return_3y_desc') return (b.return_3y || 0) - (a.return_3y || 0);
+        return a.symbol.localeCompare(b.symbol);
+      });
+
+      document.getElementById('dataCount').textContent = `共 ${filteredEtfData.length} 檔標的`;
+
+      renderCurrentView();
+    }
+
+    function renderCurrentView() {
+      if (currentView === 'card') {
+        document.getElementById('cardView').style.display = 'grid';
+        document.getElementById('tableView').style.display = 'none';
+        renderCardView();
+      } else {
+        document.getElementById('cardView').style.display = 'none';
+        document.getElementById('tableView').style.display = 'block';
+        renderTableView();
+      }
+    }
+
+    // ==========================================
+    // 4. 🎴 卡片檢視渲染 (依據要求重新排版與增加最新配息)
+    // ==========================================
+    function renderCardView() {
+      const container = document.getElementById('cardView');
+      if (filteredEtfData.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--sub-text);">無符合條件的 ETF 標的</div>`;
+        return;
+      }
+
+      container.innerHTML = filteredEtfData.map(d => {
+        const isFav = favorites.includes(d.symbol);
+        const isChecked = selectedCompareSymbols.has(d.symbol) ? 'checked' : '';
+        return `
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">
+                  <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${d.symbol}', event)">
+                    ${isFav ? '⭐' : '☆'}
+                  </button>
+                  ${d.symbol}
+                </div>
+                <div class="card-sub">${d.name || '-'}</div>
+              </div>
+              <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; color:var(--sub-text);">
+                <input type="checkbox" class="compare-checkbox" onchange="toggleCompare('${d.symbol}')" ${isChecked}>
+                加入比對
+              </label>
+            </div>
+
+            <!-- 基本數據網格 -->
+            <div class="data-row">
+              <div class="row-item"><span>現價</span><span class="highlight-val">$${fmt(d.price)}</span></div>
+              <div class="row-item"><span>規模(億)</span><span>$${fmt(d.market_cap)}</span></div>
+              <div class="row-item"><span>近四季配息</span><span class="highlight-val">$${fmt(d.dividend_4q)}</span></div>
+              <div class="row-item"><span>現價殖利率</span><span class="highlight-val">${fmtPct(d.yield)}</span></div>
+              
+              <!-- 💡 依據要求：加入「最新配息」與並排發放日/入帳週期 -->
+              <div class="row-item"><span>最新配息</span><span class="text-blue">$${fmt(d.dividend_latest)}</span></div>
+              <div class="row-item"><span>最新發放日</span><span>${d.pay_date || '-'}</span></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding-top:4px;">
+              <span style="font-size:12px; color:var(--sub-text);">入帳週期：</span>
+              ${getCycleBadgeHtml(d.payout_cycle)}
+            </div>
+
+            <!-- 💡 依據要求：改為「左右雙欄對齊」年化報酬率卡片 -->
+            <div style="font-size:12px; color:var(--sub-text); margin-top:10px; font-weight:600;">📈 多期間績效與年化報酬率：</div>
+            <div class="return-dual-col">
+              <div>
+                <div class="return-col-item"><span>3個月</span><span class="${getValClass(d.return_3m)}">${fmtPct(d.return_3m, true)}</span></div>
+                <div class="return-col-item"><span>6個月</span><span class="${getValClass(d.return_6m)}">${fmtPct(d.return_6m, true)}</span></div>
+                <div class="return-col-item"><span>今年至今</span><span class="${getValClass(d.return_ytd)}">${fmtPct(d.return_ytd, true)}</span></div>
+              </div>
+              <div>
+                <div class="return-col-item"><span>1年化</span><span class="${getValClass(d.annual_return)}">${fmtPct(d.annual_return, true)}</span></div>
+                <div class="return-col-item"><span>3年化</span><span class="${getValClass(d.return_3y)}">${fmtPct(d.return_3y, true)}</span></div>
+                <div class="return-col-item"><span>5年化</span><span class="${getValClass(d.return_5y)}">${fmtPct(d.return_5y, true)}</span></div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // 5. 表格渲染 Engine (文字對比加強、高清顯示)
+    // ==========================================
+    function renderTableView() {
+      const thead = document.getElementById('tableHead');
+      const tbody = document.getElementById('tableBody');
+
+      if (filteredEtfData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align:center; padding:30px;">無符合條件的數據</td></tr>`;
+        return;
+      }
+
+      // 💰 模式 A：查看 ETF 配息
+      if (currentView === 'dividend') {
+        thead.innerHTML = `
+          <tr>
+            <th style="width:52px; text-align:center;">最愛</th>
+            <th style="text-align:left;">比對 / 代碼 / 名稱</th>
+            <th>現價</th>
+            <th>ETF規模(億)</th>
+            <th>近四季配息</th>
+            <th>現價殖利率</th>
+            <th>今年度累計配息</th>
+            <th>最新配息</th>
+            <th>最新除息日期</th>
+            <th>最新股利發放日</th>
+            <th>除息週期</th>
+            <th>入帳週期</th>
+            <th>類別</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = filteredEtfData.map(d => {
+          const isFav = favorites.includes(d.symbol);
+          const isChecked = selectedCompareSymbols.has(d.symbol) ? 'checked' : '';
+          return `
+            <tr>
+              <td style="text-align:center;">
+                <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${d.symbol}', event)">
+                  ${isFav ? '⭐' : '☆'}
+                </button>
+              </td>
+              <td style="text-align:left;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" class="compare-checkbox" onchange="toggleCompare('${d.symbol}')" ${isChecked}>
+                  <div>
+                    <strong style="color:var(--primary); font-size:16px;">${d.symbol}</strong>
+                    <span style="font-size:12px; color:var(--sub-text); display:block; font-weight:400;">${d.name || ''}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="highlight-val">$${fmt(d.price)}</td>
+              <td>$${fmt(d.market_cap)}</td>
+              <td class="text-blue">$${fmt(d.dividend_4q)}</td>
+              <td class="text-blue">${fmtPct(d.yield)}</td>
+              <td class="text-blue">$${fmt(d.dividend_ytd)}</td>
+              <td class="text-blue">$${fmt(d.dividend_latest)}</td>
+              <td>${d.ex_date || '-'}</td>
+              <td>${d.pay_date || '-'}</td>
+              <td>${getCycleBadgeHtml(d.dividend_cycle)}</td>
+              <td>${getCycleBadgeHtml(d.payout_cycle)}</td>
+              <td><span class="cycle-badge cycle-default">${d.category || '-'}</span></td>
+            </tr>
+          `;
+        }).join('');
+
+      } 
+      // 📈 模式 B：查看 ETF 績效
+      else if (currentView === 'performance') {
+        thead.innerHTML = `
+          <tr>
+            <th style="width:52px; text-align:center;">最愛</th>
+            <th style="text-align:left;">比對 / 代碼 / 名稱</th>
+            <th>現價</th>
+            <th>240MA年線</th>
+            <th>年線乖離率(%)</th>
+            <th>1年報酬率</th>
+            <th>3M</th>
+            <th>6M</th>
+            <th>YTD</th>
+            <th>2Y化</th>
+            <th>3Y化</th>
+            <th>5Y化</th>
+          </tr>
+        `;
+
+        tbody.innerHTML = filteredEtfData.map(d => {
+          const isFav = favorites.includes(d.symbol);
+          const isChecked = selectedCompareSymbols.has(d.symbol) ? 'checked' : '';
+          return `
+            <tr>
+              <td style="text-align:center;">
+                <button class="star-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite('${d.symbol}', event)">
+                  ${isFav ? '⭐' : '☆'}
+                </button>
+              </td>
+              <td style="text-align:left;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" class="compare-checkbox" onchange="toggleCompare('${d.symbol}')" ${isChecked}>
+                  <div>
+                    <strong style="color:var(--primary); font-size:16px;">${d.symbol}</strong>
+                    <span style="font-size:12px; color:var(--sub-text); display:block; font-weight:400;">${d.name || ''}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="highlight-val">$${fmt(d.price)}</td>
+              <td>$${fmt(d.ma240)}</td>
+              <td class="${getValClass(d.bias)}">${fmtPct(d.bias, true)}</td>
+              <td class="${getValClass(d.annual_return)}">${fmtPct(d.annual_return, true)}</td>
+              <td class="${getValClass(d.return_3m)}">${fmtPct(d.return_3m, true)}</td>
+              <td class="${getValClass(d.return_6m)}">${fmtPct(d.return_6m, true)}</td>
+              <td class="${getValClass(d.return_ytd)}">${fmtPct(d.return_ytd, true)}</td>
+              <td class="${getValClass(d.return_2y)}">${fmtPct(d.return_2y, true)}</td>
+              <td class="${getValClass(d.return_3y)}">${fmtPct(d.return_3y, true)}</td>
+              <td class="${getValClass(d.return_5y)}">${fmtPct(d.return_5y, true)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    function switchView(view, btn) {
+      currentView = view;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCurrentView();
+    }
+
+    // ==========================================
+    // 6. 多檔橫向比對功能 (Compare Engine)
+    // ==========================================
+    function toggleCompare(symbol) {
+      if (selectedCompareSymbols.has(symbol)) {
+        selectedCompareSymbols.delete(symbol);
+      } else {
+        selectedCompareSymbols.add(symbol);
+      }
+      updateCompareBar();
+    }
+
+    function updateCompareBar() {
+      const bar = document.getElementById('compareBar');
+      const countText = document.getElementById('compareCount');
+      if (selectedCompareSymbols.size > 0) {
+        bar.style.display = 'flex';
+        countText.textContent = `已選擇 ${selectedCompareSymbols.size} 檔標的`;
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+
+    function clearCompare() {
+      selectedCompareSymbols.clear();
+      updateCompareBar();
+      renderCurrentView();
+    }
+
+    function openCompareModal() {
+      if (selectedCompareSymbols.size === 0) return;
+
+      const compareList = rawEtfData.filter(d => selectedCompareSymbols.has(d.symbol));
+      const modal = document.getElementById('compareModal');
+      const table = document.getElementById('compareMatrixTable');
+
+      const maxYield = Math.max(...compareList.map(d => d.yield || -999));
+      const maxReturn1Y = Math.max(...compareList.map(d => d.annual_return || -999));
+      const maxReturn3Y = Math.max(...compareList.map(d => d.return_3y || -999));
+
+      let html = `
+        <thead>
+          <tr>
+            <th style="text-align:left; min-width:140px;">比對項目</th>
+            ${compareList.map(d => `
+              <th>
+                <div style="font-size:16px; color:var(--primary);">${d.symbol}</div>
+                <div style="font-size:12px; color:var(--sub-text); font-weight:normal;">${d.name || ''}</div>
+              </th>
+            `).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(255,255,255,0.02);"><td colspan="${compareList.length + 1}" style="text-align:left; font-weight:bold; color:var(--primary);">📌 基本資訊與規模</td></tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">現價</td>
+            ${compareList.map(d => `<td class="highlight-val">$${fmt(d.price)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">基金規模(億)</td>
+            ${compareList.map(d => `<td>$${fmt(d.market_cap)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">入帳週期</td>
+            ${compareList.map(d => `<td>${getCycleBadgeHtml(d.payout_cycle)}</td>`).join('')}
+          </tr>
+
+          <tr style="background:rgba(255,255,255,0.02);"><td colspan="${compareList.length + 1}" style="text-align:left; font-weight:bold; color:var(--primary);">💰 配息表現</td></tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">近四季累積配息</td>
+            ${compareList.map(d => `<td class="highlight-val">$${fmt(d.dividend_4q)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">最新單期配息</td>
+            ${compareList.map(d => `<td class="text-blue">$${fmt(d.dividend_latest)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">現價股息殖利率</td>
+            ${compareList.map(d => {
+              const isBest = d.yield && d.yield === maxYield;
+              return `<td class="${getValClass(d.yield)}">
+                ${fmtPct(d.yield)}${isBest ? '<span class="best-badge">最高</span>' : ''}
+              </td>`;
+            }).join('')}
+          </tr>
+
+          <tr style="background:rgba(255,255,255,0.02);"><td colspan="${compareList.length + 1}" style="text-align:left; font-weight:bold; color:var(--primary);">📈 績效與年化報酬率對決</td></tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">3 個月報酬率</td>
+            ${compareList.map(d => `<td class="${getValClass(d.return_3m)}">${fmtPct(d.return_3m, true)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">6 個月報酬率</td>
+            ${compareList.map(d => `<td class="${getValClass(d.return_6m)}">${fmtPct(d.return_6m, true)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">今年至今 (YTD)</td>
+            ${compareList.map(d => `<td class="${getValClass(d.return_ytd)}">${fmtPct(d.return_ytd, true)}</td>`).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">1 年化報酬率</td>
+            ${compareList.map(d => {
+              const isBest = d.annual_return && d.annual_return === maxReturn1Y;
+              return `<td class="${getValClass(d.annual_return)}">
+                ${fmtPct(d.annual_return, true)}${isBest ? '<span class="best-badge">領先</span>' : ''}
+              </td>`;
+            }).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">3 年化報酬率</td>
+            ${compareList.map(d => {
+              const isBest = d.return_3y && d.return_3y === maxReturn3Y;
+              return `<td class="${getValClass(d.return_3y)}">
+                ${fmtPct(d.return_3y, true)}${isBest ? '<span class="best-badge">領先</span>' : ''}
+              </td>`;
+            }).join('')}
+          </tr>
+          <tr>
+            <td style="text-align:left; color:var(--sub-text);">5 年化報酬率</td>
+            ${compareList.map(d => `<td class="${getValClass(d.return_5y)}">${fmtPct(d.return_5y, true)}</td>`).join('')}
+          </tr>
+        </tbody>
       `;
-    }).join('');
-  }
 
-  // 頁籤切換
-  function switchTab(tabId, btn) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
-  }
+      table.innerHTML = html;
+      modal.classList.add('active');
+    }
 
-  loadData();
-</script>
+    function closeCompareModal() {
+      document.getElementById('compareModal').classList.remove('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', loadEtfData);
+  </script>
 </body>
 </html>
